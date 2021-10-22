@@ -25,13 +25,13 @@ public class SetUpDb {
     try {
       tx.begin();
 
-      Creator c1 = new Creator("juser");
+      Creator c1 = new Creator(1L, "juser");
       em.persist(c1);
 
-      Creator c2 = new Creator("guser");
+      Creator c2 = new Creator(2L, "guser");
       em.persist(c2);
 
-      Creator c3 = new Creator("admin");
+      Creator c3 = new Creator(3L, "admin");
       em.persist(c3);
 
       Task u1 = new Task(new DateTimeFormatted(LocalDateTime.now().plusDays(2)).toString(), c1,
@@ -53,6 +53,10 @@ public class SetUpDb {
       Task u5 = new Task(new DateTimeFormatted(LocalDateTime.now().plusDays(6)).toString(), c2,
           "Another non too important task");
       em.persist(u5);
+
+      Task u6 = new Task(new DateTimeFormatted(LocalDateTime.now().plusDays(1)).toString(), c2,
+          "This is very important");
+      em.persist(u6);
 
       tx.commit();
     } catch (Exception e) {

@@ -4,6 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.JWTVerifier;
+
 import ar.api.Tasks;
 import ar.model.Task;
 import io.javalin.Javalin;
@@ -37,18 +43,19 @@ public class WebAPI {
     
     //Token cookie validation
     
-    app.before(ctx -> {
+//    app.before(ctx -> {
 //    String token = ctx.cookie("token");
 //
 //    try {
-//      Algorithm algorithm = Algorithm.HMAC256("secret3");
+//      Algorithm algorithm = Algorithm.HMAC256("secret");
 //      JWTVerifier verifier = JWT.require(algorithm).build(); 
 //      DecodedJWT jwt = verifier.verify(token);
 //      System.out.println(jwt.getClaim("roles"));
 //    } catch (JWTVerificationException exception) {
 //      throw exception;
 //    }
-    });
+//    });
+
   }
 
   private Handler tasks() {
