@@ -40,6 +40,7 @@ public class SetUpDb {
 
       Task u2 = new Task(new DateTimeFormatted(LocalDateTime.now().plusDays(1)).toString(), c1,
           "Buy that very important thing");
+      u2.done();
       em.persist(u2);
 
       Task u3 = new Task(new DateTimeFormatted(LocalDateTime.now().plusDays(10)).toString(), c1,

@@ -33,7 +33,9 @@ public class Task {
   private String taskText;
 
   public Task(String expirationDate, Creator creator, String text) {
-    // TODO: validations!
+    TaskErrors errors = new TaskErrors(text, expirationDate);
+    errors.throwOnError();
+    
     this.creationDate = LocalDateTime.now();
     this.expireDate = new DateTimeFormatted(expirationDate).toLocalDateTime();
     this.creator = creator;
@@ -48,6 +50,10 @@ public class Task {
     this.done = false;
   }
 
+  public Long creatorId() {
+    return this.creator.id();
+  }
+  
   public TaskStatus status() { 
     long days = ChronoUnit.DAYS.between(LocalDateTime.now(), this.expireDate);
     
@@ -65,8 +71,8 @@ public class Task {
   }
   
   public Map<String, Object> toMap() {
-    return Map.of("creationDate", new DateTimeFormatted(this.creationDate).toString(), "expirationDate",
-        new DateTimeFormatted(this.expireDate).toString(), "text", this.taskText, "creator",
+    return Map.of("id", this.id ,"creationDate", new DateTimeFormatted(this.creationDate).toString(), "expirationDate",
+        new DateTimeFormatted(this.expireDate).toString(), "text", this.taskText, "done", this.done, "creator",
         this.creator.toMap(), "status", this.status());
   }
 

@@ -17,6 +17,10 @@ public class Creator {
     this.creatorName = creatorName;
   }
   
+  public Long id() {
+    return id;
+  }
+  
   public String creatorName() {
     return this.creatorName;
   }
