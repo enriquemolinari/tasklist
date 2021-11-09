@@ -5,6 +5,6 @@ This is Task list back-end service to demonstrate how authentication works with 
 # Install and Start
 
 - Install maven
-- git https://github.com/enriquemolinari/tasklist.git tasklist
+- git clone https://github.com/enriquemolinari/tasklist.git tasklist
 - mvn install
 - then run: mvn exec:java. This will start Javalin/Jetty with the services running on Port: 1235.
