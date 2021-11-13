@@ -17,6 +17,7 @@ enum Role implements RouteRole {
 
 public class WebAPI {
 
+  private static final String JWT_SECRET = "secret";
   private int webPort;
   private Tasks tasks;
 
@@ -29,7 +30,7 @@ public class WebAPI {
     Javalin app = Javalin.create(config -> {
       config.accessManager((handler, ctx, routeRoles) -> {
 
-        Token token = new Token(ctx.cookie("token")).verify("secret");
+        Token token = new Token(ctx.cookie("token")).verify(JWT_SECRET);
 
         String userRoles = token.roles();
         if (!routeRoles.contains(Role.valueOf(userRoles))) {
