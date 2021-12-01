@@ -8,16 +8,10 @@ import ar.api.Tasks;
 import ar.model.Task;
 import ar.model.TaskException;
 import io.javalin.Javalin;
-import io.javalin.core.security.RouteRole;
 import io.javalin.http.Handler;
-
-enum Role implements RouteRole {
-  SIMPLE, ADMIN;
-}
 
 public class WebAPI {
 
-  private static final String JWT_SECRET = "secret";
   private int webPort;
   private Tasks tasks;
 
@@ -29,14 +23,9 @@ public class WebAPI {
   public void start() {
     Javalin app = Javalin.create(config -> {
       config.accessManager((handler, ctx, routeRoles) -> {
-
-        Token token = new Token(ctx.cookie("token")).verify(JWT_SECRET);
-
-        String userRoles = token.roles();
-        if (!routeRoles.contains(Role.valueOf(userRoles))) {
+        if (!new User(ctx.cookie("token"), routeRoles).checkAccess()) {
           ctx.status(401).json(Map.of("result", "error", "message", "Unnathorized"));
         }
-
         handler.handle(ctx);
       });
     }).start(this.webPort);
@@ -44,8 +33,8 @@ public class WebAPI {
     app.get("/tasks", tasks(), Role.SIMPLE, Role.ADMIN);
     app.post("/tasks", addTasks(), Role.SIMPLE, Role.ADMIN);
     app.delete("/tasks", deleteTasks(), Role.SIMPLE, Role.ADMIN);
-    app.post("/tasks/done", taskDone(), Role.SIMPLE, Role.ADMIN);
-    app.post("/tasks/inprogress", taskInProgress(), Role.SIMPLE, Role.ADMIN);
+    app.put("/tasks/done", taskDone(), Role.SIMPLE, Role.ADMIN);
+    app.put("/tasks/inprogress", taskInProgress(), Role.SIMPLE, Role.ADMIN);
 
     app.exception(UnnauthorizedException.class, (e, ctx) -> {
       ctx.status(401);
@@ -57,7 +46,7 @@ public class WebAPI {
       ctx.json(Map.of("result", "error", "message", e.toMap()));
       // log error in a stream...
     });
-    
+
     app.exception(Exception.class, (e, ctx) -> {
       ctx.status(500);
       ctx.json(Map.of("result", "error", "message", "Ups... algo se rompió.: " + e.getMessage()));
@@ -67,27 +56,27 @@ public class WebAPI {
 
   private Handler deleteTasks() {
     return ctx -> {
-      String idTask = ctx.queryParam("idTask");
+      TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
-      this.tasks.deleteTask(new Token(ctx.cookie("token")).userId().toString(), idTask);
+      this.tasks.deleteTask(new Token(ctx.cookie("token")).userId().toString(), dto.getIdTask());
       ctx.json(Map.of("result", "success"));
     };
   }
-  
+
   private Handler taskDone() {
     return ctx -> {
-      String idTask = ctx.queryParam("idTask");
+      TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
-      this.tasks.done(new Token(ctx.cookie("token")).userId().toString(), idTask);
+      this.tasks.done(new Token(ctx.cookie("token")).userId().toString(), dto.getIdTask());
       ctx.json(Map.of("result", "success"));
     };
   }
 
   private Handler taskInProgress() {
     return ctx -> {
-      String idTask = ctx.queryParam("idTask");
+      TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
-      this.tasks.inProgress(new Token(ctx.cookie("token")).userId().toString(), idTask);
+      this.tasks.inProgress(new Token(ctx.cookie("token")).userId().toString(), dto.getIdTask());
       ctx.json(Map.of("result", "success"));
     };
   }

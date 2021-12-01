@@ -2,6 +2,7 @@ package ar.web;
 
 public class TaskDto {
 
+  private String idTask;
   private String expirationDate;
   private String taskText;
   
@@ -19,5 +20,13 @@ public class TaskDto {
 
   public void setTaskText(String taskText) {
     this.taskText = taskText;
+  }
+
+  public String getIdTask() {
+    return idTask;
+  }
+
+  public void setIdTask(String idTask) {
+    this.idTask = idTask;
   }
 }

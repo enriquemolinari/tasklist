@@ -9,7 +9,7 @@ class TaskErrors {
 
   private static final String MSG_MISSING = "This field is mandatory";
   private static final String MSG_INVALID_DATE = "Date is invalid";
-  private static final String MSG_PAST_DATE = "Date must be future";
+  private static final String MSG_PAST_DATE = "Date must be in the future";
 
   private Map<String, String> errors = new HashMap<>();
 
