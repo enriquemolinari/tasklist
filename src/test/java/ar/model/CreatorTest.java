@@ -6,11 +6,10 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-
-public class CreatorTest {
+class CreatorTest {
 
   @Test
-  public void creatorToMap() {
+  void creatorToMap() {
     Creator c = new Creator(1l, "juser");
     assertEquals(Map.of("creator", "juser"), c.toMap());    
   }
