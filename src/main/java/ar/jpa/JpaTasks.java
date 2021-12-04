@@ -73,7 +73,7 @@ public class JpaTasks implements Tasks {
       tx.rollback();
       throw e;
     } finally {
-      if (em != null && em.isOpen())
+      if (em.isOpen())
         em.close();
     }
   }
@@ -104,7 +104,7 @@ public class JpaTasks implements Tasks {
       tx.rollback();
       throw new RuntimeException(e);
     } finally {
-      if (em != null && em.isOpen())
+      if (em.isOpen())
         em.close();
     }
   }

@@ -64,7 +64,7 @@ public class SetUpDb {
       tx.rollback();
       throw new RuntimeException(e);
     } finally {
-      if (em != null && em.isOpen())
+      if (em.isOpen())
         em.close();
     }
   }

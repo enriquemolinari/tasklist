@@ -12,6 +12,12 @@ import io.javalin.http.Handler;
 
 public class WebAPI {
 
+  private static final String JSON_SUCCESS = "success";
+  private static final String JSON_ERROR = "error";
+  private static final String TASKS_ENDPOINT = "/tasks";
+  private static final String JSON_RESULT = "result";
+  private static final String JSON_MESSAGE = "message";
+  private static final String TOKEN_COOKIE_NAME = "token";
   private int webPort;
   private Tasks tasks;
 
@@ -21,35 +27,34 @@ public class WebAPI {
   }
 
   public void start() {
-    Javalin app = Javalin.create(config -> {
-      config.accessManager((handler, ctx, routeRoles) -> {
-        if (!new User(ctx.cookie("token"), routeRoles).checkAccess()) {
-          ctx.status(401).json(Map.of("result", "error", "message", "Unnathorized"));
-        }
-        handler.handle(ctx);
-      });
-    }).start(this.webPort);
+    Javalin app = Javalin.create(config -> config.accessManager((handler, ctx, routeRoles) -> {
+      if (!new User(ctx.cookie(TOKEN_COOKIE_NAME), routeRoles).checkAccess()) {
+        ctx.status(401).json(Map.of(JSON_RESULT, JSON_ERROR, JSON_MESSAGE, "Unnathorized"));
+      }
+      handler.handle(ctx);
+    })).start(this.webPort);
 
-    app.get("/tasks", tasks(), Role.SIMPLE, Role.ADMIN);
-    app.post("/tasks", addTasks(), Role.SIMPLE, Role.ADMIN);
-    app.delete("/tasks", deleteTasks(), Role.SIMPLE, Role.ADMIN);
-    app.put("/tasks/done", taskDone(), Role.SIMPLE, Role.ADMIN);
-    app.put("/tasks/inprogress", taskInProgress(), Role.SIMPLE, Role.ADMIN);
+    app.get(TASKS_ENDPOINT, tasks(), Role.SIMPLE, Role.ADMIN);
+    app.post(TASKS_ENDPOINT, addTasks(), Role.SIMPLE, Role.ADMIN);
+    app.delete(TASKS_ENDPOINT, deleteTasks(), Role.SIMPLE, Role.ADMIN);
+    app.put(TASKS_ENDPOINT + "/done", taskDone(), Role.SIMPLE, Role.ADMIN);
+    app.put(TASKS_ENDPOINT + "/inprogress", taskInProgress(), Role.SIMPLE, Role.ADMIN);
 
     app.exception(UnnauthorizedException.class, (e, ctx) -> {
       ctx.status(401);
-      ctx.json(Map.of("result", "error", "message", e.getMessage()));
+      ctx.json(Map.of(JSON_RESULT, JSON_ERROR, JSON_MESSAGE, e.getMessage()));
       // log error in a stream...
     });
 
-    app.exception(TaskException.class, (e, ctx) -> {
-      ctx.json(Map.of("result", "error", "message", e.toMap()));
-      // log error in a stream...
-    });
+    app.exception(TaskException.class,
+        (e, ctx) -> ctx.json(Map.of(JSON_RESULT, JSON_ERROR, JSON_MESSAGE, e.toMap()))
+    // log error in a stream...
+    );
 
     app.exception(Exception.class, (e, ctx) -> {
       ctx.status(500);
-      ctx.json(Map.of("result", "error", "message", "Ups... algo se rompió.: " + e.getMessage()));
+      ctx.json(
+          Map.of(JSON_RESULT, JSON_ERROR, JSON_MESSAGE, "Ups... algo se rompió.: " + e.getMessage()));
       // log error in a stream...
     });
   }
@@ -58,8 +63,9 @@ public class WebAPI {
     return ctx -> {
       TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
-      this.tasks.deleteTask(new Token(ctx.cookie("token")).userId().toString(), dto.getIdTask());
-      ctx.json(Map.of("result", "success"));
+      this.tasks.deleteTask(new Token(ctx.cookie(TOKEN_COOKIE_NAME)).userId().toString(),
+          dto.getIdTask());
+      ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
     };
   }
 
@@ -67,8 +73,8 @@ public class WebAPI {
     return ctx -> {
       TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
-      this.tasks.done(new Token(ctx.cookie("token")).userId().toString(), dto.getIdTask());
-      ctx.json(Map.of("result", "success"));
+      this.tasks.done(new Token(ctx.cookie(TOKEN_COOKIE_NAME)).userId().toString(), dto.getIdTask());
+      ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
     };
   }
 
@@ -76,8 +82,9 @@ public class WebAPI {
     return ctx -> {
       TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
-      this.tasks.inProgress(new Token(ctx.cookie("token")).userId().toString(), dto.getIdTask());
-      ctx.json(Map.of("result", "success"));
+      this.tasks.inProgress(new Token(ctx.cookie(TOKEN_COOKIE_NAME)).userId().toString(),
+          dto.getIdTask());
+      ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
     };
   }
 
@@ -85,22 +92,22 @@ public class WebAPI {
     return ctx -> {
       TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
-      this.tasks.addTask(new Token(ctx.cookie("token")).userId().toString(), dto.getTaskText(),
+      this.tasks.addTask(new Token(ctx.cookie(TOKEN_COOKIE_NAME)).userId().toString(), dto.getTaskText(),
           dto.getExpirationDate());
-      ctx.json(Map.of("result", "success"));
+      ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
     };
   }
 
   private Handler tasks() {
     return ctx -> {
 
-      List<Task> tasks = this.tasks.list(new Token(ctx.cookie("token")).userId().toString());
+      List<Task> tasksList = this.tasks
+          .list(new Token(ctx.cookie(TOKEN_COOKIE_NAME)).userId().toString());
 
-      List<Map<String, Object>> tasksToJson = tasks.stream().map((t) -> {
-        return t.toMap();
-      }).collect(Collectors.toList());
+      List<Map<String, Object>> tasksToJson = tasksList.stream().map((t) -> t.toMap())
+          .collect(Collectors.toList());
 
-      ctx.json(Map.of("result", "success", "tasks", tasksToJson));
+      ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS, "tasks", tasksToJson));
     };
   }
 }

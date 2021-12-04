@@ -7,6 +7,7 @@ import java.util.Map;
 
 class TaskErrors {
 
+  private static final String EXPIRATION_DATE = "expirationDate";
   private static final String MSG_MISSING = "This field is mandatory";
   private static final String MSG_INVALID_DATE = "Date is invalid";
   private static final String MSG_PAST_DATE = "Date must be in the future";
@@ -23,15 +24,15 @@ class TaskErrors {
     }
 
     if (nullOrEmpty(expirationDate)) {
-      this.errors.put("expirationDate", MSG_MISSING);
+      this.errors.put(EXPIRATION_DATE, MSG_MISSING);
     } else {
       try {
         var expDate = new DateTimeFormatted(expirationDate);
         if (LocalDateTime.now().isAfter(expDate.toLocalDateTime())) {
-          this.errors.put("expirationDate", MSG_PAST_DATE);
+          this.errors.put(EXPIRATION_DATE, MSG_PAST_DATE);
         }
       } catch (DateTimeParseException e) {
-        this.errors.put("expirationDate", MSG_INVALID_DATE);
+        this.errors.put(EXPIRATION_DATE, MSG_INVALID_DATE);
       }
     }
   }
