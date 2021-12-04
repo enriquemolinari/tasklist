@@ -104,7 +104,7 @@ public class WebAPI {
       List<Task> tasksList = this.tasks
           .list(new Token(ctx.cookie(TOKEN_COOKIE_NAME)).userId().toString());
 
-      List<Map<String, Object>> tasksToJson = tasksList.stream().map((t) -> t.toMap())
+      List<Map<String, Object>> tasksToJson = tasksList.stream().map(t -> t.toMap())
           .collect(Collectors.toList());
 
       ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS, "tasks", tasksToJson));
