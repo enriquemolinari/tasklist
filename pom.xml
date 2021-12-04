@@ -8,6 +8,8 @@
 
 	<properties>
 		<main.class>ar.main.Main</main.class>
+		<sonar.organization>enriquemolinari</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
 
 	<dependencies>
