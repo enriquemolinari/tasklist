@@ -10,7 +10,7 @@
 		<main.class>ar.main.Main</main.class>
 		<sonar.organization>enriquemolinari</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>		
-		<sonar.coverage.exclusions>ar/jpa/**/*, ar/web/**/*, ar/main/**/*</sonar.coverage.exclusions>
+		<sonar.coverage.exclusions>src/main/java/ar/jpa/*, src/main/java/ar/main/*, src/main/java/ar/web/*</sonar.coverage.exclusions>
 
 		<!-- JaCoCo Properties -->
 		<jacoco.version>0.8.7</jacoco.version>
