@@ -20,4 +20,11 @@ class DateTimeFormattedTest {
     assertEquals("2001-12-10 10:30", date.toString());
   }
 
+  
+  @Test
+  void tobuildWithLocalDateToString() {
+    var date = new DateTimeFormatted(LocalDateTime.of(2001, 12, 10, 10, 30));
+    assertEquals("2001-12-10 10:30", date.toString());
+  }
+
 }
