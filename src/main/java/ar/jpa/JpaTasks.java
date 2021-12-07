@@ -1,5 +1,6 @@
 package ar.jpa;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -66,7 +67,7 @@ public class JpaTasks implements Tasks {
     try {
       tx.begin();
       Creator c = em.getReference(Creator.class, Long.valueOf(idCreator));
-      Task t = new Task(expirationDate, c, taskText);
+      Task t = new Task(LocalDateTime.now(), expirationDate, c, taskText);
       em.persist(t);
       tx.commit();
     } catch (Exception e) {

@@ -12,13 +12,32 @@ class TaskErrors {
   private static final String MSG_INVALID_DATE = "Date is invalid";
   private static final String MSG_PAST_DATE = "Date must be in the future";
 
+  private String taskText;
+  private String expirationDate;
+  private DateProvider dateProvider;
   private Map<String, String> errors = new HashMap<>();
 
   private boolean nullOrEmpty(String value) {
     return value == null || value.isEmpty() || value.isBlank();
   }
 
+  public TaskErrors(DateProvider dateProvider, String taskText, String expirationDate) {
+    this.dateProvider = dateProvider;
+    this.taskText = taskText;
+    this.expirationDate = expirationDate;
+  }
+
   public TaskErrors(String taskText, String expirationDate) {
+    this(new DateProvider() {
+      @Override
+      public LocalDateTime now() {
+        return LocalDateTime.now();
+      }
+    }, taskText, expirationDate);
+  }
+
+  public void throwOnError() {
+
     if (nullOrEmpty(taskText)) {
       this.errors.put("taskText", MSG_MISSING);
     }
@@ -28,16 +47,14 @@ class TaskErrors {
     } else {
       try {
         var expDate = new DateTimeFormatted(expirationDate);
-        if (LocalDateTime.now().isAfter(expDate.toLocalDateTime())) {
+        if (this.dateProvider.now().isAfter(expDate.toLocalDateTime())) {
           this.errors.put(EXPIRATION_DATE, MSG_PAST_DATE);
         }
       } catch (DateTimeParseException e) {
         this.errors.put(EXPIRATION_DATE, MSG_INVALID_DATE);
       }
     }
-  }
 
-  public void throwOnError() {
     if (this.hasErrors()) {
       throw new TaskException(this.toMap());
     }

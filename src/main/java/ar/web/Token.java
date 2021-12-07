@@ -28,8 +28,9 @@ public class Token {
   }
 
   private DecodedJWT decode() {
-    if (this.jwt != null)
+    if (this.jwt != null) {
       return this.jwt;
+    }
     
     try {
       this.jwt = JWT.decode(jwtbase64Token);

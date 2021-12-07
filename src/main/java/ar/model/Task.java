@@ -20,23 +20,25 @@ public class Task {
   private boolean done = false;
   private LocalDateTime creationDate;
   private LocalDateTime expireDate;
-  
+
   private enum TaskStatus {
-    DANGER,
-    WARNING, 
-    FINE,
-    FUTURE;
+    DANGER, WARNING, FINE, FUTURE;
   }
-  
+
   @ManyToOne(cascade = CascadeType.ALL)
   private Creator creator;
   private String taskText;
 
-  public Task(String expirationDate, Creator creator, String text) {
+  public Task(Long id, LocalDateTime creationDate, String expirationDate, Creator creator, String text) {
+    this(creationDate, expirationDate, creator, text);
+    this.id = id;
+  }
+
+  public Task(LocalDateTime creationDate, String expirationDate, Creator creator, String text) {
     TaskErrors errors = new TaskErrors(text, expirationDate);
     errors.throwOnError();
-    
-    this.creationDate = LocalDateTime.now();
+
+    this.creationDate = creationDate;
     this.expireDate = new DateTimeFormatted(expirationDate).toLocalDateTime();
     this.creator = creator;
     this.taskText = text;
@@ -53,27 +55,29 @@ public class Task {
   public Long creatorId() {
     return this.creator.id();
   }
-  
-  public TaskStatus status() { 
-    long days = ChronoUnit.DAYS.between(LocalDateTime.now(), this.expireDate);
-    
+
+  public TaskStatus status() {
+    long days = ChronoUnit.DAYS.between(this.creationDate, this.expireDate);
+
     if (days <= 2) {
-      return TaskStatus.DANGER;      
-    }    
-    if (days > 2 && days <= 5) {
-      return TaskStatus.WARNING;      
-    }    
-    if (days > 5 && days <= 15) {
-      return TaskStatus.FINE;      
+      return TaskStatus.DANGER;
     }
-    
+    if (days > 2 && days <= 5) {
+      return TaskStatus.WARNING;
+    }
+    if (days > 5 && days <= 15) {
+      return TaskStatus.FINE;
+    }
+
     return TaskStatus.FUTURE;
   }
-  
+
   public Map<String, Object> toMap() {
-    return Map.of("id", this.id ,"creationDate", new DateTimeFormatted(this.creationDate).toString(), "expirationDate",
-        new DateTimeFormatted(this.expireDate).toString(), "text", this.taskText, "done", this.done, "creator",
-        this.creator.toMap(), "status", this.status());
+    var m = Map.of("id", this.id, "creationDate", new DateTimeFormatted(this.creationDate).toString(),
+        "expirationDate", new DateTimeFormatted(this.expireDate).toString(), "text", this.taskText,
+        "done", this.done, "creator", this.creator.toMap(), "status", this.status());
+
+    return m;
   }
 
   // just for hibernate...
