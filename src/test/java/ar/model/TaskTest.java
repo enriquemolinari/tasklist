@@ -24,13 +24,34 @@ class TaskTest {
     assertEquals("FUTURE", taskMap.get("status").toString());
   }
   
-//  @Test
-//  void fineStatusTask() {
-//    var creator = new Creator(1l, "aCreator");
-//    var task = new Task(1l, LocalDateTime.of(2021, 10, 02, 12, 15), "2021-10-09 14:30", creator,
-//        "do something very important !");
-//
-//    var taskMap = task.toMap();
-//    assertEquals("FINE", taskMap.get("status").toString());
-//  }
+  @Test
+  void fineStatusTask() {
+    var creator = new Creator(1l, "aCreator");
+    var task = new Task(1l, LocalDateTime.of(2021, 10, 02, 12, 15), "2021-10-09 14:30", creator,
+        "do something very important !");
+
+    var taskMap = task.toMap();
+    assertEquals("FINE", taskMap.get("status").toString());
+  }
+  
+  @Test
+  void dangerStatusTask() {
+    var creator = new Creator(1l, "aCreator");
+    var task = new Task(1l, LocalDateTime.of(2021, 10, 02, 12, 15), "2021-10-03 14:30", creator,
+        "do something very important !");
+
+    var taskMap = task.toMap();
+    assertEquals("DANGER", taskMap.get("status").toString());
+  }
+
+  @Test
+  void warningStatusTask() {
+    var creator = new Creator(1l, "aCreator");
+    var task = new Task(1l, LocalDateTime.of(2021, 10, 02, 12, 15), "2021-10-05 14:30", creator,
+        "do something very important !");
+
+    var taskMap = task.toMap();
+    assertEquals("WARNING", taskMap.get("status").toString());
+  }
+
 }

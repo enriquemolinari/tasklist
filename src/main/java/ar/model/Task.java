@@ -35,7 +35,7 @@ public class Task {
   }
 
   public Task(LocalDateTime creationDate, String expirationDate, Creator creator, String text) {
-    TaskErrors errors = new TaskErrors(text, expirationDate);
+    TaskErrors errors = new TaskErrors(creationDate, text, expirationDate);
     errors.throwOnError();
 
     this.creationDate = creationDate;

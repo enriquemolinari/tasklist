@@ -14,26 +14,21 @@ class TaskErrors {
 
   private String taskText;
   private String expirationDate;
-  private DateProvider dateProvider;
+  private LocalDateTime creationDate;
   private Map<String, String> errors = new HashMap<>();
 
   private boolean nullOrEmpty(String value) {
     return value == null || value.isEmpty() || value.isBlank();
   }
 
-  public TaskErrors(DateProvider dateProvider, String taskText, String expirationDate) {
-    this.dateProvider = dateProvider;
+  public TaskErrors(LocalDateTime creationDate, String taskText, String expirationDate) {
+    this.creationDate = creationDate;
     this.taskText = taskText;
     this.expirationDate = expirationDate;
   }
 
   public TaskErrors(String taskText, String expirationDate) {
-    this(new DateProvider() {
-      @Override
-      public LocalDateTime now() {
-        return LocalDateTime.now();
-      }
-    }, taskText, expirationDate);
+    this(LocalDateTime.now(), taskText, expirationDate);
   }
 
   public void throwOnError() {
@@ -47,7 +42,7 @@ class TaskErrors {
     } else {
       try {
         var expDate = new DateTimeFormatted(expirationDate);
-        if (this.dateProvider.now().isAfter(expDate.toLocalDateTime())) {
+        if (this.creationDate.isAfter(expDate.toLocalDateTime())) {
           this.errors.put(EXPIRATION_DATE, MSG_PAST_DATE);
         }
       } catch (DateTimeParseException e) {
