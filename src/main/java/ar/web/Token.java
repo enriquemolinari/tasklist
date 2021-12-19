@@ -28,11 +28,17 @@ public class Token {
   }
 
   String roles() {
-    return this.paseto.getClaims().get("roles", String.class);
+    if (this.paseto != null)
+      return this.paseto.getClaims().get("roles", String.class);
+    
+    throw new IllegalArgumentException("There is no token created yet");
   }
 
   Integer userId() {
-    return this.paseto.getClaims().get("id", Integer.class);
+    if (this.paseto != null)
+      return this.paseto.getClaims().get("id", Integer.class);
+    
+    throw new IllegalArgumentException("There is no token created yet");
   }
 
 }
