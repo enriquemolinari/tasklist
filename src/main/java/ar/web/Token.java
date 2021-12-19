@@ -13,6 +13,8 @@ public class Token {
   private String pasetoToken;
 
   public Token(String pasetoToken) {
+    if (pasetoToken == null)
+      throw new UnnauthorizedException("token cannot be null or empty");
     this.pasetoToken = pasetoToken;
   }
 
@@ -31,14 +33,14 @@ public class Token {
     if (this.paseto != null)
       return this.paseto.getClaims().get("roles", String.class);
     
-    throw new IllegalArgumentException("There is no token created yet");
+    throw new UnnauthorizedException("There is no token created yet");
   }
 
   Integer userId() {
     if (this.paseto != null)
       return this.paseto.getClaims().get("id", Integer.class);
     
-    throw new IllegalArgumentException("There is no token created yet");
+    throw new UnnauthorizedException("There is no token created yet");
   }
 
 }
