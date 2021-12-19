@@ -20,15 +20,17 @@ public class WebAPI {
   private static final String TOKEN_COOKIE_NAME = "token";
   private int webPort;
   private Tasks tasks;
+  private String base64Secret;
 
-  public WebAPI(int webPort, Tasks tasks) {
+  public WebAPI(int webPort, Tasks tasks, String base64Secret) {
     this.webPort = webPort;
     this.tasks = tasks;
+    this.base64Secret = base64Secret;
   }
 
   public void start() {
     Javalin app = Javalin.create(config -> config.accessManager((handler, ctx, routeRoles) -> {
-      if (!new User(ctx.cookie(TOKEN_COOKIE_NAME), routeRoles).checkAccess()) {
+      if (!new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).checkAccess(routeRoles)) {
         ctx.status(401).json(Map.of(JSON_RESULT, JSON_ERROR, JSON_MESSAGE, "Unnathorized"));
       }
       handler.handle(ctx);
@@ -63,7 +65,7 @@ public class WebAPI {
     return ctx -> {
       TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
-      this.tasks.deleteTask(new Token(ctx.cookie(TOKEN_COOKIE_NAME)).userId().toString(),
+      this.tasks.deleteTask(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString(),
           dto.getIdTask());
       ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
     };
@@ -73,7 +75,8 @@ public class WebAPI {
     return ctx -> {
       TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
-      this.tasks.done(new Token(ctx.cookie(TOKEN_COOKIE_NAME)).userId().toString(), dto.getIdTask());
+      this.tasks.done(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString(),
+          dto.getIdTask());
       ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
     };
   }
@@ -82,7 +85,7 @@ public class WebAPI {
     return ctx -> {
       TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
-      this.tasks.inProgress(new Token(ctx.cookie(TOKEN_COOKIE_NAME)).userId().toString(),
+      this.tasks.inProgress(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString(),
           dto.getIdTask());
       ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
     };
@@ -92,8 +95,8 @@ public class WebAPI {
     return ctx -> {
       TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
-      this.tasks.addTask(new Token(ctx.cookie(TOKEN_COOKIE_NAME)).userId().toString(), dto.getTaskText(),
-          dto.getExpirationDate());
+      this.tasks.addTask(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString(),
+          dto.getTaskText(), dto.getExpirationDate());
       ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
     };
   }
@@ -102,7 +105,7 @@ public class WebAPI {
     return ctx -> {
 
       List<Task> tasksList = this.tasks
-          .list(new Token(ctx.cookie(TOKEN_COOKIE_NAME)).userId().toString());
+          .list(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString());
 
       List<Map<String, Object>> tasksToJson = tasksList.stream().map(t -> t.toMap())
           .collect(Collectors.toList());

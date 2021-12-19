@@ -1,51 +1,38 @@
 package ar.web;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.auth0.jwt.interfaces.JWTVerifier;
+import java.util.Base64;
+
+import dev.paseto.jpaseto.Paseto;
+import dev.paseto.jpaseto.PasetoException;
+import dev.paseto.jpaseto.Pasetos;
+import dev.paseto.jpaseto.lang.Keys;
 
 public class Token {
 
-  private DecodedJWT jwt;
-  private String jwtbase64Token;
+  private Paseto paseto;
+  private String pasetoToken;
 
-  public Token(String token) {
-    this.jwtbase64Token = token;
+  public Token(String pasetoToken) {
+    this.pasetoToken = pasetoToken;
   }
 
-  public Token verify(String secret) {
+  public Token verify(String base64Secret) {
     try {
-      Algorithm algorithm = Algorithm.HMAC256(secret);
-      JWTVerifier verifier = JWT.require(algorithm).build();
-      this.jwt = verifier.verify(this.jwtbase64Token);
+      this.paseto = Pasetos.parserBuilder()
+          .setSharedSecret(Keys.secretKey(Base64.getDecoder().decode(base64Secret))).build()
+          .parse(this.pasetoToken);
       return this;
-    } catch (JWTVerificationException e) {
-      throw new UnnauthorizedException(e);
+    } catch (PasetoException ex) {
+      throw new UnnauthorizedException(ex);
     }
   }
 
-  private DecodedJWT decode() {
-    if (this.jwt != null) {
-      return this.jwt;
-    }
-    
-    try {
-      this.jwt = JWT.decode(jwtbase64Token);
-      return this.jwt;
-    } catch (JWTDecodeException e) {
-      throw new UnnauthorizedException(e);
-    }
+  String roles() {
+    return this.paseto.getClaims().get("roles", String.class);
   }
 
-  public String roles() {
-    return this.decode().getClaim("roles").asString();
-  }
-
-  public Integer userId() {
-    return this.decode().getClaim("id").asInt();
+  Integer userId() {
+    return this.paseto.getClaims().get("id", Integer.class);
   }
 
 }

@@ -6,19 +6,27 @@ import io.javalin.core.security.RouteRole;
 
 public class User {
 
-  private static final String JWT_SECRET = "secret";
-  private String jwtbase64Token;
-  private Set<RouteRole> requiredRoles;
+  private String pasetobase64Token;
+  private String base64Secret;
 
-  public User(String token, Set<RouteRole> routeRoles) {
-    this.jwtbase64Token = token;
-    this.requiredRoles = routeRoles;
+  public User(String token, String base64Secret) {
+    this.pasetobase64Token = token;
+    this.base64Secret = base64Secret;
   }
 
-  public boolean checkAccess() {
-    Token token = new Token(this.jwtbase64Token).verify(JWT_SECRET);
+  public boolean checkAccess(Set<RouteRole> requiredRoles) {
+    Token token = new Token(this.pasetobase64Token).verify(this.base64Secret);
 
     String userRoles = token.roles();
     return requiredRoles.contains(Role.valueOf(userRoles));
   }
+
+  public String roles() {
+    return new Token(this.pasetobase64Token).verify(this.base64Secret).roles();
+  }
+
+  public Integer userId() {
+    return new Token(this.pasetobase64Token).verify(this.base64Secret).userId();
+  }
+
 }
