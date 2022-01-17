@@ -11,7 +11,7 @@ import io.javalin.Javalin;
 import io.javalin.http.Handler;
 
 public class WebAPI {
-  private static final String ORIGIN = "https://web-pwa-epm.loca.lt";
+  private static final String ORIGIN = "https://web-epm.loca.lt";
   private static final String JSON_SUCCESS = "success";
   private static final String JSON_ERROR = "error";
   private static final String TASKS_ENDPOINT = "/tasks";
