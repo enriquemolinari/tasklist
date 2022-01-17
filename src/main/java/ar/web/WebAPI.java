@@ -11,7 +11,7 @@ import io.javalin.Javalin;
 import io.javalin.http.Handler;
 
 public class WebAPI {
-
+  private static final String ORIGIN = "https://web-pwa-epm.loca.lt";
   private static final String JSON_SUCCESS = "success";
   private static final String JSON_ERROR = "error";
   private static final String TASKS_ENDPOINT = "/tasks";
@@ -21,20 +21,29 @@ public class WebAPI {
   private int webPort;
   private Tasks tasks;
   private String base64Secret;
-
-  public WebAPI(int webPort, Tasks tasks, String base64Secret) {
+  private Boolean localTunnel;
+  
+  public WebAPI(int webPort, Boolean localTunnel, Tasks tasks, String base64Secret) {
     this.webPort = webPort;
     this.tasks = tasks;
     this.base64Secret = base64Secret;
+    this.localTunnel = localTunnel;
   }
 
   public void start() {
-    Javalin app = Javalin.create(config -> config.accessManager((handler, ctx, routeRoles) -> {
-      if (!new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).checkAccess(routeRoles)) {
-        ctx.status(401).json(Map.of(JSON_RESULT, JSON_ERROR, JSON_MESSAGE, "Unnathorized"));
+    Javalin app = Javalin.create(config -> {
+    
+      config.accessManager((handler, ctx, routeRoles) -> {
+        if (!new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).checkAccess(routeRoles)) {
+          ctx.status(401).json(Map.of(JSON_RESULT, JSON_ERROR, JSON_MESSAGE, "Unnathorized"));
+        }
+        handler.handle(ctx);
+      });
+      
+      if (localTunnel) {
+        config.enableCorsForOrigin(ORIGIN);
       }
-      handler.handle(ctx);
-    })).start(this.webPort);
+      }).start(this.webPort);
 
     app.get(TASKS_ENDPOINT, tasks(), Role.SIMPLE, Role.ADMIN);
     app.post(TASKS_ENDPOINT, addTasks(), Role.SIMPLE, Role.ADMIN);
