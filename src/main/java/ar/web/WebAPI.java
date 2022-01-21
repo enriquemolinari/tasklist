@@ -52,7 +52,7 @@ public class WebAPI {
     app.put(TASKS_ENDPOINT + "/inprogress", taskInProgress(), Role.SIMPLE, Role.ADMIN);
     
     //sync endpoints
-    app.delete(TASKS_ENDPOINT + "deleteSync", deleteTaskBySync(), Role.SIMPLE, Role.ADMIN);
+    app.delete(TASKS_ENDPOINT + "/deleteSync", deleteTaskBySync(), Role.SIMPLE, Role.ADMIN);
     app.put(TASKS_ENDPOINT + "/updateSync", updateTaskBySync(), Role.SIMPLE, Role.ADMIN);
 
     
@@ -111,7 +111,7 @@ public class WebAPI {
       TaskSyncDto dto = ctx.bodyAsClass(TaskSyncDto.class);
 
       this.tasks.updateBySyncId(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString(),
-          dto.getSyncId(),  true);
+          dto.getSyncId(),  Boolean.valueOf(dto.getDone()));
       ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
     };
   }
