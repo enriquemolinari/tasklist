@@ -1,11 +1,11 @@
 package ar.web;
 
-public class TaskDto {
+public class TaskSyncDto {
 
-  private String idTask;
   private String expirationDate;
   private String taskText;
   private String syncId;
+  private String done;
   
   public String getExpirationDate() {
     return expirationDate;
@@ -31,11 +31,11 @@ public class TaskDto {
     this.syncId = syncId;
   }
 
-  public String getIdTask() {
-    return idTask;
+  public String getDone() {
+    return done;
   }
 
-  public void setIdTask(String idTask) {
-    this.idTask = idTask;
+  public void setDone(String done) {
+    this.done = done;
   }
 }

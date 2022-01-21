@@ -14,5 +14,9 @@ public interface Tasks {
   
   void inProgress(String idCreator, String idTask);
   
-  void addTask(String idCreator, String taskText, String expirationDate);
+  void addTask(String idCreator, String taskText, String expirationDate, String asyncId);
+  
+  void updateBySyncId(String idCreator, String syncId, boolean done);
+  
+  public void deleteTaskBySyncId(String idCreator, String syncId);
 }

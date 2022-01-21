@@ -50,7 +50,12 @@ public class WebAPI {
     app.delete(TASKS_ENDPOINT, deleteTasks(), Role.SIMPLE, Role.ADMIN);
     app.put(TASKS_ENDPOINT + "/done", taskDone(), Role.SIMPLE, Role.ADMIN);
     app.put(TASKS_ENDPOINT + "/inprogress", taskInProgress(), Role.SIMPLE, Role.ADMIN);
+    
+    //sync endpoints
+    app.delete(TASKS_ENDPOINT + "deleteSync", deleteTaskBySync(), Role.SIMPLE, Role.ADMIN);
+    app.put(TASKS_ENDPOINT + "/updateSync", updateTaskBySync(), Role.SIMPLE, Role.ADMIN);
 
+    
     app.exception(UnnauthorizedException.class, (e, ctx) -> {
       ctx.status(401);
       ctx.json(Map.of(JSON_RESULT, JSON_ERROR, JSON_MESSAGE, e.getMessage()));
@@ -90,6 +95,28 @@ public class WebAPI {
     };
   }
 
+  private Handler deleteTaskBySync() {
+    return ctx -> {
+      TaskSyncDto dto = ctx.bodyAsClass(TaskSyncDto.class);
+
+      this.tasks.deleteTaskBySyncId(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString(),
+          dto.getSyncId());
+      ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
+    };
+  }
+
+  
+  private Handler updateTaskBySync() {
+    return ctx -> {
+      TaskSyncDto dto = ctx.bodyAsClass(TaskSyncDto.class);
+
+      this.tasks.updateBySyncId(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString(),
+          dto.getSyncId(),  true);
+      ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
+    };
+  }
+
+  
   private Handler taskInProgress() {
     return ctx -> {
       TaskDto dto = ctx.bodyAsClass(TaskDto.class);
@@ -105,7 +132,7 @@ public class WebAPI {
       TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
       this.tasks.addTask(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString(),
-          dto.getTaskText(), dto.getExpirationDate());
+          dto.getTaskText(), dto.getExpirationDate(), dto.getSyncId());
       ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
     };
   }

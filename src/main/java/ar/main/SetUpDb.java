@@ -1,6 +1,7 @@
 package ar.main;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -35,28 +36,28 @@ public class SetUpDb {
       em.persist(c3);
 
       Task u1 = new Task(LocalDateTime.now(), new DateTimeFormatted(LocalDateTime.now().plusDays(2)).toString(), c1,
-          "Remember to do this, that, and also the other");
+          "Remember to do this, that, and also the other", UUID.randomUUID().toString());
       em.persist(u1);
 
       Task u2 = new Task(LocalDateTime.now(), new DateTimeFormatted(LocalDateTime.now().plusDays(1)).toString(), c1,
-          "Buy that very important thing");
+          "Buy that very important thing", UUID.randomUUID().toString());
       u2.done();
       em.persist(u2);
 
       Task u3 = new Task(LocalDateTime.now(), new DateTimeFormatted(LocalDateTime.now().plusDays(10)).toString(), c1,
-          "Sister Birthday, do the preparations");
+          "Sister Birthday, do the preparations", UUID.randomUUID().toString());
       em.persist(u3);
 
       Task u4 = new Task(LocalDateTime.now(), new DateTimeFormatted(LocalDateTime.now().plusDays(20)).toString(), c1,
-          "Record AC/DC interview");
+          "Record AC/DC interview", UUID.randomUUID().toString());
       em.persist(u4);
 
       Task u5 = new Task(LocalDateTime.now(), new DateTimeFormatted(LocalDateTime.now().plusDays(6)).toString(), c2,
-          "Another non too important task");
+          "Another non too important task", UUID.randomUUID().toString());
       em.persist(u5);
 
       Task u6 = new Task(LocalDateTime.now(), new DateTimeFormatted(LocalDateTime.now().plusDays(1)).toString(), c2,
-          "This is very important");
+          "This is very important", UUID.randomUUID().toString());
       em.persist(u6);
 
       tx.commit();

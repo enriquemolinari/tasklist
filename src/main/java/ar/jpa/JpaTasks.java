@@ -40,6 +40,49 @@ public class JpaTasks implements Tasks {
   }
 
   @Override
+  public void updateBySyncId(String idCreator, String syncId, boolean done) {
+    EntityManager em = emf.createEntityManager();
+    EntityTransaction tx = em.getTransaction();
+    try {
+      tx.begin();
+      Query query = em.createQuery(
+          "update from Task t set t.done = :done where t.syncId = :syncId and t.creator.id = :idCreator");
+      query.setParameter("syncId", syncId);
+      query.setParameter("idCreator", Long.valueOf(idCreator));
+      query.setParameter("done", done);
+      query.executeUpdate();
+      tx.commit();
+    } catch (Exception e) {
+      tx.rollback();
+      throw new RuntimeException(e);
+    } finally {
+      if (em.isOpen())
+        em.close();
+    }
+  }
+  
+  @Override
+  public void deleteTaskBySyncId(String idCreator, String syncId) {
+    EntityManager em = emf.createEntityManager();
+    EntityTransaction tx = em.getTransaction();
+    try {
+      tx.begin();
+      Query query = em.createQuery("delete from Task t where t.syncId = :syncId and t.creator.id = :idCreator");
+      query.setParameter("syncId", syncId);
+      query.setParameter("idCreator", Long.valueOf(idCreator));
+      query.executeUpdate();
+      tx.commit();
+    } catch (Exception e) {
+      tx.rollback();
+      throw new RuntimeException(e);
+    } finally {
+      if (em.isOpen())
+        em.close();
+    }
+  }
+
+  
+  @Override
   public void deleteTask(String idCreator, String idTask) {
 
     EntityManager em = emf.createEntityManager();
@@ -61,13 +104,13 @@ public class JpaTasks implements Tasks {
   }
 
   @Override
-  public void addTask(String idCreator, String taskText, String expirationDate) {
+  public void addTask(String idCreator, String taskText, String expirationDate, String asyncId) {
     EntityManager em = emf.createEntityManager();
     EntityTransaction tx = em.getTransaction();
     try {
       tx.begin();
       Creator c = em.getReference(Creator.class, Long.valueOf(idCreator));
-      Task t = new Task(LocalDateTime.now(), expirationDate, c, taskText);
+      Task t = new Task(LocalDateTime.now(), expirationDate, c, taskText, asyncId);
       em.persist(t);
       tx.commit();
     } catch (Exception e) {

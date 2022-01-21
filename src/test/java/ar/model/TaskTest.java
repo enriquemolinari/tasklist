@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +14,7 @@ class TaskTest {
   void futureStatusTask() {
     var creator = new Creator(1l, "aCreator");
     var task = new Task(1l, LocalDateTime.of(2021, 10, 02, 12, 15), "2022-04-12 14:30", creator,
-        "do something very important !");
+        "do something very important !", UUID.randomUUID().toString());
 
     var taskMap = task.toMap();
     assertEquals(1l, taskMap.get("id"));
@@ -28,7 +29,7 @@ class TaskTest {
   void fineStatusTask() {
     var creator = new Creator(1l, "aCreator");
     var task = new Task(1l, LocalDateTime.of(2021, 10, 02, 12, 15), "2021-10-09 14:30", creator,
-        "do something very important !");
+        "do something very important !", UUID.randomUUID().toString());
 
     var taskMap = task.toMap();
     assertEquals("FINE", taskMap.get("status").toString());
@@ -38,7 +39,7 @@ class TaskTest {
   void dangerStatusTask() {
     var creator = new Creator(1l, "aCreator");
     var task = new Task(1l, LocalDateTime.of(2021, 10, 02, 12, 15), "2021-10-03 14:30", creator,
-        "do something very important !");
+        "do something very important !", UUID.randomUUID().toString());
 
     var taskMap = task.toMap();
     assertEquals("DANGER", taskMap.get("status").toString());
@@ -48,7 +49,7 @@ class TaskTest {
   void warningStatusTask() {
     var creator = new Creator(1l, "aCreator");
     var task = new Task(1l, LocalDateTime.of(2021, 10, 02, 12, 15), "2021-10-05 14:30", creator,
-        "do something very important !");
+        "do something very important !", UUID.randomUUID().toString());
 
     var taskMap = task.toMap();
     assertEquals("WARNING", taskMap.get("status").toString());
