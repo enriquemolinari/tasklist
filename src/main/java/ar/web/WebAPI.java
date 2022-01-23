@@ -1,9 +1,11 @@
 package ar.web;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import ar.api.BulkData;
 import ar.api.Tasks;
 import ar.model.Task;
 import ar.model.TaskException;
@@ -22,7 +24,7 @@ public class WebAPI {
   private Tasks tasks;
   private String base64Secret;
   private Boolean localTunnel;
-  
+
   public WebAPI(int webPort, Boolean localTunnel, Tasks tasks, String base64Secret) {
     this.webPort = webPort;
     this.tasks = tasks;
@@ -32,30 +34,28 @@ public class WebAPI {
 
   public void start() {
     Javalin app = Javalin.create(config -> {
-    
+
       config.accessManager((handler, ctx, routeRoles) -> {
         if (!new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).checkAccess(routeRoles)) {
           ctx.status(401).json(Map.of(JSON_RESULT, JSON_ERROR, JSON_MESSAGE, "Unnathorized"));
         }
         handler.handle(ctx);
       });
-      
+
       if (localTunnel) {
         config.enableCorsForOrigin(ORIGIN);
       }
-      }).start(this.webPort);
+    }).start(this.webPort);
 
     app.get(TASKS_ENDPOINT, tasks(), Role.SIMPLE, Role.ADMIN);
     app.post(TASKS_ENDPOINT, addTasks(), Role.SIMPLE, Role.ADMIN);
     app.delete(TASKS_ENDPOINT, deleteTasks(), Role.SIMPLE, Role.ADMIN);
     app.put(TASKS_ENDPOINT + "/done", taskDone(), Role.SIMPLE, Role.ADMIN);
     app.put(TASKS_ENDPOINT + "/inprogress", taskInProgress(), Role.SIMPLE, Role.ADMIN);
-    
-    //sync endpoints
-    app.delete(TASKS_ENDPOINT + "/deleteSync", deleteTaskBySync(), Role.SIMPLE, Role.ADMIN);
-    app.put(TASKS_ENDPOINT + "/updateSync", updateTaskBySync(), Role.SIMPLE, Role.ADMIN);
 
-    
+    // sync endpoint
+    app.post(TASKS_ENDPOINT + "/bulk", bulkUpdate(), Role.SIMPLE, Role.ADMIN);
+
     app.exception(UnnauthorizedException.class, (e, ctx) -> {
       ctx.status(401);
       ctx.json(Map.of(JSON_RESULT, JSON_ERROR, JSON_MESSAGE, e.getMessage()));
@@ -95,28 +95,21 @@ public class WebAPI {
     };
   }
 
-  private Handler deleteTaskBySync() {
+  private Handler bulkUpdate() {
     return ctx -> {
-      TaskSyncDto dto = ctx.bodyAsClass(TaskSyncDto.class);
+      TaskSyncDto[] dto = ctx.bodyAsClass(TaskSyncDto[].class);
 
-      this.tasks.deleteTaskBySyncId(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString(),
-          dto.getSyncId());
+      List<BulkData> bulk = Arrays.asList(dto).stream().map((e) -> {
+        return new BulkData(e.getExpirationDate(), e.getText(), e.getSyncId(), e.getDone(),
+            Long.valueOf(e.getQueuedTime()), e.getOp());
+      }).collect(Collectors.toList());
+
+      this.tasks.bulkUpdate(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString(),
+          bulk);
       ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
     };
   }
 
-  
-  private Handler updateTaskBySync() {
-    return ctx -> {
-      TaskSyncDto dto = ctx.bodyAsClass(TaskSyncDto.class);
-
-      this.tasks.updateBySyncId(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString(),
-          dto.getSyncId(),  Boolean.valueOf(dto.getDone()));
-      ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
-    };
-  }
-
-  
   private Handler taskInProgress() {
     return ctx -> {
       TaskDto dto = ctx.bodyAsClass(TaskDto.class);
@@ -132,7 +125,7 @@ public class WebAPI {
       TaskDto dto = ctx.bodyAsClass(TaskDto.class);
 
       this.tasks.addTask(new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).userId().toString(),
-          dto.getTaskText(), dto.getExpirationDate(), dto.getSyncId());
+          dto.getTaskText(), dto.getExpirationDate());
       ctx.json(Map.of(JSON_RESULT, JSON_SUCCESS));
     };
   }

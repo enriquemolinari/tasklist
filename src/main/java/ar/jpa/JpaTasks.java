@@ -1,6 +1,7 @@
 package ar.jpa;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -9,6 +10,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import ar.api.BulkData;
 import ar.api.Tasks;
 import ar.model.Creator;
 import ar.model.Task;
@@ -40,37 +42,36 @@ public class JpaTasks implements Tasks {
   }
 
   @Override
-  public void updateBySyncId(String idCreator, String syncId, boolean done) {
+  public void bulkUpdate(String idCreator, List<BulkData> data) {
     EntityManager em = emf.createEntityManager();
     EntityTransaction tx = em.getTransaction();
     try {
       tx.begin();
-      Query query = em.createQuery(
-          "update from Task t set t.done = :done where t.syncId = :syncId and t.creator.id = :idCreator");
-      query.setParameter("syncId", syncId);
-      query.setParameter("idCreator", Long.valueOf(idCreator));
-      query.setParameter("done", done);
-      query.executeUpdate();
-      tx.commit();
-    } catch (Exception e) {
-      tx.rollback();
-      throw new RuntimeException(e);
-    } finally {
-      if (em.isOpen())
-        em.close();
-    }
-  }
-  
-  @Override
-  public void deleteTaskBySyncId(String idCreator, String syncId) {
-    EntityManager em = emf.createEntityManager();
-    EntityTransaction tx = em.getTransaction();
-    try {
-      tx.begin();
-      Query query = em.createQuery("delete from Task t where t.syncId = :syncId and t.creator.id = :idCreator");
-      query.setParameter("syncId", syncId);
-      query.setParameter("idCreator", Long.valueOf(idCreator));
-      query.executeUpdate();
+      // order of queued to apply changes
+      Collections.sort(data);
+
+      for (BulkData bulkData : data) {
+        if ("add".equals(bulkData.operation())) {
+          Creator c = em.getReference(Creator.class, Long.valueOf(idCreator));
+          Task t = new Task(LocalDateTime.now(), bulkData.expirationDate(), c, bulkData.text(),
+              bulkData.syncId());
+          em.persist(t);
+        } else if ("update".equals(bulkData.operation())) {
+          Query query = em.createQuery(
+              "update from Task t set t.done = :done where t.syncId = :syncId and t.creator.id = :idCreator");
+          query.setParameter("syncId", bulkData.syncId());
+          query.setParameter("idCreator", Long.valueOf(idCreator));
+          query.setParameter("done", bulkData.done());
+          query.executeUpdate();
+          
+        } else if ("del".equals(bulkData.operation())) {
+          Query query = em
+              .createQuery("delete from Task t where t.syncId = :syncId and t.creator.id = :idCreator");
+          query.setParameter("syncId", bulkData.syncId());
+          query.setParameter("idCreator", Long.valueOf(idCreator));
+          query.executeUpdate();          
+        }
+      }
       tx.commit();
     } catch (Exception e) {
       tx.rollback();
@@ -81,7 +82,6 @@ public class JpaTasks implements Tasks {
     }
   }
 
-  
   @Override
   public void deleteTask(String idCreator, String idTask) {
 
@@ -104,13 +104,13 @@ public class JpaTasks implements Tasks {
   }
 
   @Override
-  public void addTask(String idCreator, String taskText, String expirationDate, String asyncId) {
+  public void addTask(String idCreator, String taskText, String expirationDate) {
     EntityManager em = emf.createEntityManager();
     EntityTransaction tx = em.getTransaction();
     try {
       tx.begin();
       Creator c = em.getReference(Creator.class, Long.valueOf(idCreator));
-      Task t = new Task(LocalDateTime.now(), expirationDate, c, taskText, asyncId);
+      Task t = new Task(LocalDateTime.now(), expirationDate, c, taskText);
       em.persist(t);
       tx.commit();
     } catch (Exception e) {

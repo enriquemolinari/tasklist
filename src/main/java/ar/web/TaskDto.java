@@ -5,7 +5,6 @@ public class TaskDto {
   private String idTask;
   private String expirationDate;
   private String taskText;
-  private String syncId;
   
   public String getExpirationDate() {
     return expirationDate;
@@ -23,14 +22,6 @@ public class TaskDto {
     this.taskText = taskText;
   }
   
-  public String getSyncId() {
-    return syncId;
-  }
-
-  public void setSyncId(String syncId) {
-    this.syncId = syncId;
-  }
-
   public String getIdTask() {
     return idTask;
   }

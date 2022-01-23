@@ -35,6 +35,10 @@ public class Task {
     this.id = id;
   }
 
+  public Task(LocalDateTime creationDate, String expirationDate, Creator creator, String text) {
+    this(creationDate, expirationDate, creator, text, null);
+  }
+  
   public Task(LocalDateTime creationDate, String expirationDate, Creator creator, String text, String syncId) {
     TaskErrors errors = new TaskErrors(creationDate, text, expirationDate);
     errors.throwOnError();
@@ -77,7 +81,7 @@ public class Task {
   public Map<String, Object> toMap() {
     var m = Map.of("id", this.id, "creationDate", new DateTimeFormatted(this.creationDate).toString(),
         "expirationDate", new DateTimeFormatted(this.expireDate).toString(), "text", this.taskText,
-        "done", this.done, "creator", this.creator.toMap(), "status", this.status(), "syncId", this.syncId);
+        "done", this.done, "creator", this.creator.toMap(), "status", this.status(), "syncId", (this.syncId != null) ? this.syncId : "");
 
     return m;
   }
