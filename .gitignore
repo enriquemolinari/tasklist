@@ -3,3 +3,4 @@
 .project
 org.*
 derby.log
+*.log
