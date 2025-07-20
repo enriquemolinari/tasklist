@@ -1,10 +1,9 @@
 package ar.main;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
 import ar.jpa.JpaTasks;
 import ar.web.WebAPI;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 
 public class Main {
 

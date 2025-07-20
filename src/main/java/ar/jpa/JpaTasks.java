@@ -4,11 +4,11 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 import ar.api.BulkData;
 import ar.api.Tasks;
@@ -58,7 +58,7 @@ public class JpaTasks implements Tasks {
           em.persist(t);
         } else if ("update".equals(bulkData.operation())) {
           Query query = em.createQuery(
-              "update from Task t set t.done = :done where t.syncId = :syncId and t.creator.id = :idCreator");
+              "update Task t set t.done = :done where t.syncId = :syncId and t.creator.id = :idCreator");
           query.setParameter("syncId", bulkData.syncId());
           query.setParameter("idCreator", Long.valueOf(idCreator));
           query.setParameter("done", bulkData.done());
@@ -138,7 +138,7 @@ public class JpaTasks implements Tasks {
     try {
       tx.begin();
       Query query = em.createQuery(
-          "update from Task t set t.done = :done where t.id = :id and t.creator.id = :idCreator");
+          "update Task t set t.done = :done where t.id = :id and t.creator.id = :idCreator");
       query.setParameter("id", Long.valueOf(idTask));
       query.setParameter("idCreator", Long.valueOf(idCreator));
       query.setParameter("done", done);

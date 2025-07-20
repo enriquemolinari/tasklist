@@ -3,13 +3,13 @@ package ar.main;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
 
 import ar.model.Creator;
 import ar.model.DateTimeFormatted;
 import ar.model.Task;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 
 public class SetUpDb {
 

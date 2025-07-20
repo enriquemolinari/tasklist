@@ -1,8 +1,9 @@
 package ar.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
 import java.util.Map;
-import javax.persistence.Entity;
-import javax.persistence.Id;
 
 @Entity
 public class Creator {

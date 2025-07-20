@@ -1,8 +1,8 @@
 package ar.web;
 
-import java.util.Set;
+import io.javalin.security.RouteRole;
 
-import io.javalin.core.security.RouteRole;
+import java.util.Set;
 
 public class User {
 

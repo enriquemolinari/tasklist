@@ -34,18 +34,21 @@ public class WebAPI {
 
   public void start() {
     Javalin app = Javalin.create(config -> {
-
-      config.accessManager((handler, ctx, routeRoles) -> {
-        if (!new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret).checkAccess(routeRoles)) {
-          ctx.status(401).json(Map.of(JSON_RESULT, JSON_ERROR, JSON_MESSAGE, "Unnathorized"));
-        }
-        handler.handle(ctx);
-      });
-
       if (localTunnel) {
-        config.enableCorsForOrigin(ORIGIN);
+        config.bundledPlugins.enableCors(cors -> {
+          cors.addRule(it -> {
+            it.allowHost(ORIGIN);
+          });
+        });
       }
     }).start(this.webPort);
+
+    app.beforeMatched(ctx -> {
+      var user = new User(ctx.cookie(TOKEN_COOKIE_NAME), base64Secret);
+      if (!user.checkAccess(ctx.routeRoles())) {
+        ctx.status(401).json(Map.of(JSON_RESULT, JSON_ERROR, JSON_MESSAGE, "Unnathorized"));
+      }
+    });
 
     app.get(TASKS_ENDPOINT, tasks(), Role.SIMPLE, Role.ADMIN);
     app.post(TASKS_ENDPOINT, addTasks(), Role.SIMPLE, Role.ADMIN);
